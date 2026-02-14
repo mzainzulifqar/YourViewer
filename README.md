@@ -2,6 +2,8 @@
 
 A self-hosted Google Analytics (GA4) dashboard built with Laravel 12, Tailwind CSS 4, Chart.js, and Alpine.js.
 
+![Dashboard](public/dashboard.png)
+
 ## Features
 
 - **Property Selector** — Lists all GA4 properties under a service account, with search
