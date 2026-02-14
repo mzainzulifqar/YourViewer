@@ -1,0 +1,1138 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Open Analytics API",
+        "description": "Self-hosted GA4 Analytics Dashboard API. Access property data including overview stats, top pages, traffic sources, devices, geography, events, and AI-generated insights. All data is cached for 15-30 minutes.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/analytics/properties": {
+            "get": {
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "List all GA4 properties",
+                "description": "Returns all GA4 accounts and their associated properties accessible by the configured service account. Cached for 30 minutes.",
+                "operationId": "76967eb1256878bcbaba876484a3930b",
+                "responses": {
+                    "200": {
+                        "description": "List of accounts with properties",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "accounts/123456"
+                                                    },
+                                                    "displayName": {
+                                                        "type": "string",
+                                                        "example": "My Company"
+                                                    },
+                                                    "properties": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "string",
+                                                                    "example": "456789012"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "example": "My Website"
+                                                                },
+                                                                "resource": {
+                                                                    "type": "string",
+                                                                    "example": "properties/456789012"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/analytics/{propertyId}/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get full dashboard payload",
+                "description": "Returns all analytics data for a property in one request: overview, top pages, traffic sources, devices, geography, events, and insights.",
+                "operationId": "c9d03f91119dee0633a681ea25089602",
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "description": "GA4 Property ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "456789012"
+                    },
+                    {
+                        "name": "range",
+                        "in": "query",
+                        "description": "Date range preset",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "30days",
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "7days",
+                                "14days",
+                                "30days",
+                                "90days",
+                                "6months",
+                                "12months",
+                                "this_month",
+                                "last_month",
+                                "this_year"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Full dashboard data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "property_id": {
+                                                    "type": "string",
+                                                    "example": "456789012"
+                                                },
+                                                "range": {
+                                                    "type": "string",
+                                                    "example": "30days"
+                                                },
+                                                "range_label": {
+                                                    "type": "string",
+                                                    "example": "Last 30 days"
+                                                },
+                                                "compare_label": {
+                                                    "type": "string",
+                                                    "example": "vs previous 30 days"
+                                                },
+                                                "overview": {
+                                                    "type": "object"
+                                                },
+                                                "top_pages": {
+                                                    "type": "object"
+                                                },
+                                                "traffic_sources": {
+                                                    "type": "object"
+                                                },
+                                                "devices": {
+                                                    "type": "object"
+                                                },
+                                                "geography": {
+                                                    "type": "object"
+                                                },
+                                                "events": {
+                                                    "type": "object"
+                                                },
+                                                "insights": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/analytics/{propertyId}/overview": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get overview stats with comparison",
+                "description": "Returns current & previous period totals, percentage deltas, and daily chart data. Metrics: sessions, activeUsers, newUsers, screenPageViews, engagementRate, bounceRate, averageSessionDuration, sessionsPerUser.",
+                "operationId": "ece1fc4c680d1f99b02b7aecce0f97b0",
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "description": "GA4 Property ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "456789012"
+                    },
+                    {
+                        "name": "range",
+                        "in": "query",
+                        "description": "Date range preset",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "30days",
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "7days",
+                                "14days",
+                                "30days",
+                                "90days",
+                                "6months",
+                                "12months",
+                                "this_month",
+                                "last_month",
+                                "this_year"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Overview with current, previous, delta, and chart data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "current": {
+                                                    "description": "Current period totals",
+                                                    "type": "object",
+                                                    "example": "{\"sessions\":1250,\"activeUsers\":890,\"newUsers\":420,\"screenPageViews\":3200,\"engagementRate\":0.65,\"bounceRate\":0.35,\"averageSessionDuration\":125.4,\"sessionsPerUser\":1.4}"
+                                                },
+                                                "previous": {
+                                                    "description": "Previous period totals",
+                                                    "type": "object"
+                                                },
+                                                "delta": {
+                                                    "description": "Percentage change per metric",
+                                                    "type": "object",
+                                                    "example": "{\"sessions\":13.6,\"activeUsers\":11.3}"
+                                                },
+                                                "chart": {
+                                                    "description": "Daily time series for charting",
+                                                    "properties": {
+                                                        "labels": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "example": "[\"01/01\",\"01/02\",\"01/03\"]"
+                                                        },
+                                                        "sessions": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "integer"
+                                                            },
+                                                            "example": "[40,45,38]"
+                                                        },
+                                                        "users": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "integer"
+                                                            },
+                                                            "example": "[30,35,28]"
+                                                        },
+                                                        "pageviews": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "integer"
+                                                            },
+                                                            "example": "[100,120,95]"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/analytics/{propertyId}/top-pages": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get top pages by pageviews",
+                "description": "Returns pages ranked by pageviews with path, title, view count, average session duration (seconds), and bounce rate.",
+                "operationId": "fbce61757fddb8940cd88bec6d8a6f3b",
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "description": "GA4 Property ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "456789012"
+                    },
+                    {
+                        "name": "range",
+                        "in": "query",
+                        "description": "Date range preset",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "30days",
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "7days",
+                                "14days",
+                                "30days",
+                                "90days",
+                                "6months",
+                                "12months",
+                                "this_month",
+                                "last_month",
+                                "this_year"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Top pages report",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "headers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": "[\"pagePath\",\"pageTitle\",\"screenPageViews\",\"averageSessionDuration\",\"bounceRate\"]"
+                                                },
+                                                "rows": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "pagePath": {
+                                                                "type": "string",
+                                                                "example": "/"
+                                                            },
+                                                            "pageTitle": {
+                                                                "type": "string",
+                                                                "example": "Home"
+                                                            },
+                                                            "screenPageViews": {
+                                                                "type": "string",
+                                                                "example": "500"
+                                                            },
+                                                            "averageSessionDuration": {
+                                                                "type": "string",
+                                                                "example": "65.3"
+                                                            },
+                                                            "bounceRate": {
+                                                                "type": "string",
+                                                                "example": "0.32"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/analytics/{propertyId}/traffic-sources": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get traffic sources breakdown",
+                "description": "Returns sessions and new users grouped by source/medium. Common sources: google/organic, direct/(none), facebook/referral.",
+                "operationId": "82f1ce7a065bee856ca9b3194f77f537",
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "description": "GA4 Property ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "456789012"
+                    },
+                    {
+                        "name": "range",
+                        "in": "query",
+                        "description": "Date range preset",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "30days",
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "7days",
+                                "14days",
+                                "30days",
+                                "90days",
+                                "6months",
+                                "12months",
+                                "this_month",
+                                "last_month",
+                                "this_year"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Traffic sources report",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "headers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": "[\"sessionSource\",\"sessionMedium\",\"sessions\",\"newUsers\"]"
+                                                },
+                                                "rows": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "sessionSource": {
+                                                                "type": "string",
+                                                                "example": "google"
+                                                            },
+                                                            "sessionMedium": {
+                                                                "type": "string",
+                                                                "example": "organic"
+                                                            },
+                                                            "sessions": {
+                                                                "type": "string",
+                                                                "example": "600"
+                                                            },
+                                                            "newUsers": {
+                                                                "type": "string",
+                                                                "example": "200"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/analytics/{propertyId}/devices": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get device category breakdown",
+                "description": "Returns sessions grouped by device category: desktop, mobile, tablet.",
+                "operationId": "f5d0dc91d5667a05477925677566289d",
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "description": "GA4 Property ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "456789012"
+                    },
+                    {
+                        "name": "range",
+                        "in": "query",
+                        "description": "Date range preset",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "30days",
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "7days",
+                                "14days",
+                                "30days",
+                                "90days",
+                                "6months",
+                                "12months",
+                                "this_month",
+                                "last_month",
+                                "this_year"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Device breakdown",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "headers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": "[\"deviceCategory\",\"sessions\"]"
+                                                },
+                                                "rows": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "deviceCategory": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "desktop",
+                                                                    "mobile",
+                                                                    "tablet"
+                                                                ],
+                                                                "example": "desktop"
+                                                            },
+                                                            "sessions": {
+                                                                "type": "string",
+                                                                "example": "700"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/analytics/{propertyId}/geography": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get geography breakdown",
+                "description": "Returns sessions grouped by country, sorted by count descending.",
+                "operationId": "be7729d42450188d9690ca94b8d27153",
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "description": "GA4 Property ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "456789012"
+                    },
+                    {
+                        "name": "range",
+                        "in": "query",
+                        "description": "Date range preset",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "30days",
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "7days",
+                                "14days",
+                                "30days",
+                                "90days",
+                                "6months",
+                                "12months",
+                                "this_month",
+                                "last_month",
+                                "this_year"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Geography report",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "headers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": "[\"country\",\"sessions\"]"
+                                                },
+                                                "rows": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "country": {
+                                                                "type": "string",
+                                                                "example": "United States"
+                                                            },
+                                                            "sessions": {
+                                                                "type": "string",
+                                                                "example": "500"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/analytics/{propertyId}/events": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get events breakdown",
+                "description": "Returns event names with total counts, sorted descending. Common GA4 events: page_view, session_start, first_visit, scroll, click.",
+                "operationId": "03d98d6f688559aff5836957177ad6bb",
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "description": "GA4 Property ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "456789012"
+                    },
+                    {
+                        "name": "range",
+                        "in": "query",
+                        "description": "Date range preset",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "30days",
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "7days",
+                                "14days",
+                                "30days",
+                                "90days",
+                                "6months",
+                                "12months",
+                                "this_month",
+                                "last_month",
+                                "this_year"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Events report",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "headers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": "[\"eventName\",\"eventCount\"]"
+                                                },
+                                                "rows": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "eventName": {
+                                                                "type": "string",
+                                                                "example": "page_view"
+                                                            },
+                                                            "eventCount": {
+                                                                "type": "string",
+                                                                "example": "3200"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/analytics/{propertyId}/pages": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get detailed pages & screens report",
+                "description": "Returns all pages grouped by page title with views, active users, views per user, engagement duration, and event count. Also includes a daily time-series chart for the top 10 pages.",
+                "operationId": "116847577acef999ca18f96ee342a884",
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "description": "GA4 Property ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "456789012"
+                    },
+                    {
+                        "name": "range",
+                        "in": "query",
+                        "description": "Date range preset",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "30days",
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "7days",
+                                "14days",
+                                "30days",
+                                "90days",
+                                "6months",
+                                "12months",
+                                "this_month",
+                                "last_month",
+                                "this_year"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detailed pages report with chart data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "table": {
+                                                    "description": "All pages with metrics",
+                                                    "properties": {
+                                                        "headers": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "example": "[\"pageTitle\",\"screenPageViews\",\"activeUsers\",\"screenPageViewsPerUser\",\"userEngagementDuration\",\"eventCount\"]"
+                                                        },
+                                                        "rows": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "properties": {
+                                                                    "pageTitle": {
+                                                                        "type": "string",
+                                                                        "example": "Home"
+                                                                    },
+                                                                    "screenPageViews": {
+                                                                        "type": "string",
+                                                                        "example": "1200"
+                                                                    },
+                                                                    "activeUsers": {
+                                                                        "type": "string",
+                                                                        "example": "450"
+                                                                    },
+                                                                    "screenPageViewsPerUser": {
+                                                                        "type": "string",
+                                                                        "example": "2.67"
+                                                                    },
+                                                                    "userEngagementDuration": {
+                                                                        "type": "string",
+                                                                        "example": "8520.5"
+                                                                    },
+                                                                    "eventCount": {
+                                                                        "type": "string",
+                                                                        "example": "3400"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "chart": {
+                                                    "description": "Daily pageview time series for top 10 pages",
+                                                    "properties": {
+                                                        "labels": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "example": "[\"01/01\",\"01/02\",\"01/03\"]"
+                                                        },
+                                                        "datasets": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "properties": {
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Home"
+                                                                    },
+                                                                    "data": {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "example": "[40,55,38]"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/analytics/{propertyId}/insights": {
+            "get": {
+                "tags": [
+                    "Insights"
+                ],
+                "summary": "Get AI-generated insights",
+                "description": "Returns up to 3 insight banners with severity (warning, success, opportunity, info) based on analytics data. Covers traffic drops, growth, source diversity, mobile optimization.",
+                "operationId": "c13977ce5487039be3194493bd637904",
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "description": "GA4 Property ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "456789012"
+                    },
+                    {
+                        "name": "range",
+                        "in": "query",
+                        "description": "Date range preset",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "30days",
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "7days",
+                                "14days",
+                                "30days",
+                                "90days",
+                                "6months",
+                                "12months",
+                                "this_month",
+                                "last_month",
+                                "this_year"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Generated insights",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "warning",
+                                                            "success",
+                                                            "opportunity",
+                                                            "info"
+                                                        ],
+                                                        "example": "warning"
+                                                    },
+                                                    "text": {
+                                                        "type": "string",
+                                                        "example": "Sessions dropped 25% compared to the previous period. Investigate traffic sources for changes."
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {
+                        "apiKeyAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Use your ANALYTICS_PASSWORD as the bearer token.",
+                "scheme": "bearer"
+            },
+            "apiKeyAuth": {
+                "type": "apiKey",
+                "description": "Pass your ANALYTICS_PASSWORD as X-Api-Key header.",
+                "name": "X-Api-Key",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Properties",
+            "description": "GA4 account & property discovery"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Aggregated dashboard data"
+        },
+        {
+            "name": "Reports",
+            "description": "Individual analytics reports"
+        },
+        {
+            "name": "Insights",
+            "description": "AI-generated insights"
+        }
+    ]
+}
